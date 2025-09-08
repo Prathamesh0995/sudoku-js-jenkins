@@ -5,7 +5,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build('sudoku-image', '.')
+                    docker.build('prathamesh1809/sudoku-image', '.')
                 }
             }
         }
