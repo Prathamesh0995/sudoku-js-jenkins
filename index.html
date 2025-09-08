@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudoku Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(9, 40px);
+      grid-template-rows: repeat(9, 40px);
+      gap: 2px;
+    }
+    input {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      font-size: 18px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e4ed8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sudoku Game</h1>
+  <div id="board"></div>
+  <button onclick="checkSolution()">Check Solution</button>
+
+  <script>
+    const board = document.getElementById("board");
+const SIZE = 9;
+let solution = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+let puzzle = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+
+// Shuffle an array
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Check if placing a number is safe
+function isSafe(grid, row, col, num) {
+  for (let x = 0; x < SIZE; x++) if (grid[row][x] === num) return false;
+  for (let x = 0; x < SIZE; x++) if (grid[x][col] === num) return false;
+
+  const startRow = row - (row % 3);
+  const startCol = col - (col % 3);
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 3; c++)
+      if (grid[startRow + r][startCol + c] === num) return false;
+
+  return true;
+}
+
+// Fill the board using backtracking
+function fillGrid(grid) {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (grid[r][c] === 0) {
+        const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        for (const n of nums) {
+          if (isSafe(grid, r, c, n)) {
+            grid[r][c] = n;
+            if (fillGrid(grid)) return true;
+            grid[r][c] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// Create puzzle by removing numbers
+function removeCells(grid, count) {
+  const cells = [];
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) cells.push([r, c]);
+
+  shuffle(cells);
+  let removed = 0;
+  for (const [r, c] of cells) {
+    if (removed >= count) break;
+    grid[r][c] = 0;
+    removed++;
+  }
+}
+
+// Generate Sudoku puzzle
+function generateSudoku() {
+  solution = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+  fillGrid(solution);
+  puzzle = solution.map(row => [...row]);
+  removeCells(puzzle, 40); // Default difficulty = Medium
+  renderBoard();
+}
+
+// Render board UI
+function renderBoard() {
+  board.innerHTML = "";
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const input = document.createElement("input");
+      input.setAttribute("maxlength", "1");
+      input.setAttribute("type", "text");
+
+      if (puzzle[r][c] !== 0) {
+        input.value = puzzle[r][c];
+        input.disabled = true;
+        input.style.backgroundColor = "#eef2ff";
+      }
+
+      input.addEventListener("input", e => {
+        const val = e.target.value.replace(/[^1-9]/, "");
+        e.target.value = val;
+        puzzle[r][c] = val ? parseInt(val) : 0;
+      });
+
+      board.appendChild(input);
+    }
+  }
+}
+
+// Check solution
+function checkSolution() {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const index = r * SIZE + c;
+      const input = board.children[index];
+      if (puzzle[r][c] !== solution[r][c]) {
+        input.style.backgroundColor = "#ffe4e4";
+      } else {
+        input.style.backgroundColor = "#e8ffe8";
+      }
+    }
+  }
+  alert("Checked! Red = wrong, Green = correct");
+}
+
+generateSudoku();
+
+  </script>
+</body>
+</html>
