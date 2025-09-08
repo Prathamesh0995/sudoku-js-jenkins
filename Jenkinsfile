@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/Prathamesh0995/sudoku-js.git'
+                git 'https://github.com/Prathamesh0995/sudoku-js-jenkins.git'
             }
         }
 
